@@ -1,0 +1,11 @@
+energyguard-dataspace-venv/
+dashboard/
+dataspace-frontend/
+tests/
+.pytest_cache/
+__pycache__/
+*.pyc
+.git/
+*.pdf
+Screenshot_*.png
+scripts/

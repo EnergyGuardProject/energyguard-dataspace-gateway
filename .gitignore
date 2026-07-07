@@ -1,0 +1,4 @@
+.env
+energyguard-dataspace-venv/
+__pycache__/
+*.pyc

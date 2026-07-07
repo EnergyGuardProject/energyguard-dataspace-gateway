@@ -1,0 +1,82 @@
+{% load static %}
+<nav class="navbar navbar-top fixed-top navbar-expand" id="navbarDefault">
+  <div class="collapse navbar-collapse justify-content-between">
+    <div class="navbar-logo">
+      <button class="btn navbar-toggler navbar-toggler-humburger-icon hover-bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#navbarVerticalCollapse" aria-controls="navbarVerticalCollapse" aria-expanded="false" aria-label="Toggle Navigation"><span class="navbar-toggle-icon"><span class="toggle-line"></span></span></button>
+      <a class="navbar-brand me-1 me-sm-3" href="{% url 'data_space' %}">
+        <div class="d-flex align-items-center">
+          <img src="{% static 'assets/img/logo/EnergyGuard_Site-1024x640.png' %}" alt="energyguard" width="179" class="d-none d-sm-block"/>
+          <img src="{% static 'assets/img/logo/EnergyGuard_logo-192x174.png' %}" alt="energyguard-mobile" width="49" class="d-block d-sm-none">
+        </div>
+      </a>
+    </div>
+
+    <ul class="navbar-nav navbar-nav-icons flex-row align-items-center">
+
+      <!-- Theme toggle -->
+      <li class="nav-item">
+        <div class="theme-control-toggle fa-icon-wait px-2">
+          <input class="form-check-input ms-0 theme-control-toggle-input" type="checkbox" data-theme-control="phoenixTheme" value="dark" id="themeControlToggle" />
+          <label class="mb-0 theme-control-toggle-label theme-control-toggle-light" for="themeControlToggle" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-title="Switch theme" style="height:32px;width:32px;"><span class="icon" data-feather="moon"></span></label>
+          <label class="mb-0 theme-control-toggle-label theme-control-toggle-dark" for="themeControlToggle" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-title="Switch theme" style="height:32px;width:32px;"><span class="icon" data-feather="sun"></span></label>
+        </div>
+      </li>
+
+      <!--
+        No Django user session in this standalone app - auth is entirely client-side
+        against the FastAPI gateway. This widget is populated/toggled by app.js based
+        on whether a token is currently held in sessionStorage.
+      -->
+      <li class="nav-item ms-2" id="authStatusLoggedOut">
+        <button class="btn btn-primary btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#loginModal">Log in</button>
+      </li>
+      <li class="nav-item dropdown d-none" id="authStatusLoggedIn">
+        <a class="nav-link lh-1 pe-0 d-flex align-items-center" id="navbarDropdownUser" href="#!" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <div class="avatar avatar-l">
+            <div class="avatar-name rounded-circle"><span id="authUserInitial">?</span></div>
+          </div>
+          <span class="ms-2 fs-9 fw-semibold text-body-emphasis d-none d-md-inline" id="authUsername"></span>
+        </a>
+        <div class="dropdown-menu dropdown-menu-end navbar-dropdown-caret py-0 dropdown-profile shadow border" aria-labelledby="navbarDropdownUser">
+          <div class="card position-relative border-0">
+            <div class="card-body p-3">
+              <p class="mb-1 fs-9 text-body-secondary">Signed in as</p>
+              <p class="mb-0 fw-semibold text-body-emphasis" id="authUserEmail"></p>
+            </div>
+            <div class="card-footer p-0 border-top border-translucent">
+              <button type="button" class="btn btn-phoenix-secondary d-flex flex-center w-100 rounded-0" id="logoutBtn"><span class="me-2" data-feather="log-out"></span>Sign out</button>
+            </div>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<!-- Login modal - posts straight to the gateway's /auth/login, never touches Django -->
+<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="loginModalLabel">Log in to the Data Space</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-body-secondary fs-9">Your Middleware account credentials for the EnerTEF dataspace.</p>
+        <div class="mb-3">
+          <label class="form-label fs-9" for="loginUsername">Username</label>
+          <input type="text" class="form-control" id="loginUsername" autocomplete="username">
+        </div>
+        <div class="mb-2">
+          <label class="form-label fs-9" for="loginPassword">Password</label>
+          <input type="password" class="form-control" id="loginPassword" autocomplete="current-password">
+        </div>
+        <div class="text-danger fs-9 d-none" id="loginError"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-phoenix-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="loginSubmitBtn">Log in</button>
+      </div>
+    </div>
+  </div>
+</div>

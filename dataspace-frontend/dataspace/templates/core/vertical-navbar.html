@@ -1,0 +1,86 @@
+{% load static %}
+
+<nav class="navbar navbar-vertical navbar-expand-lg">
+    <div class="collapse navbar-collapse" id="navbarVerticalCollapse">
+        <div class="navbar-vertical-content">
+            <ul class="navbar-nav flex-column" id="navbarVerticalNav">
+                <!--
+                  These items don't exist as real pages in this standalone project - they're
+                  kept here (as inert links) purely so this file's structure matches the real
+                  EnergyGuard-frontend/core/templates/core/vertical-navbar.html 1:1, making the
+                  eventual merge a small diff instead of a rewrite. When merging: swap href="#"
+                  back to the real url-tag names and drop the "standalone-disabled" class.
+                -->
+                <li class="nav-item"><a class="nav-link standalone-disabled" href="#" tabindex="-1" title="Part of the main EnergyGuard dashboard">
+                    <div class="d-flex align-items-center"><span class="nav-link-icon"><span data-feather="grid"></span></span><span class="nav-link-text fs-8-5 py-2">Dashboard</span>
+                    </div>
+                </a>
+                </li>
+                <li class="nav-item"><a class="nav-link standalone-disabled" href="#" tabindex="-1" title="Part of the main EnergyGuard dashboard">
+                    <div class="d-flex align-items-center"><span class="nav-link-icon"><span data-feather="folder"></span></span><span class="nav-link-text fs-8-5 py-2">Projects</span>
+                    </div>
+                </a>
+                </li>
+
+                <li class="nav-item"><a class="nav-link standalone-disabled" href="#" tabindex="-1" title="Part of the main EnergyGuard dashboard">
+                    <div class="d-flex align-items-center"><span class="nav-link-icon"><span data-feather="shield"></span></span><span class="nav-link-text fs-8-5 py-2">Trustworthiness Assessments</span>
+                    </div>
+                </a>
+                </li>
+
+                <li class="nav-item">
+                    <div class="nav-item-wrapper"><a class="nav-link dropdown-indicator label-1" href="#nv-assets" data-bs-toggle="collapse" aria-expanded="true" aria-controls="nv-assets">
+                        <div class="d-flex align-items-center">
+                            <div class="dropdown-indicator-icon-wrapper"><span class="fas fa-caret-right dropdown-indicator-icon"></span></div><span class="nav-link-icon"><span data-feather="layers"></span></span><span class="nav-link-text fs-8-5 py-2">Assets</span>
+                        </div>
+                        </a>
+                        <div class="parent-wrapper label-1">
+                            <ul class="nav collapse parent show" data-bs-parent="#navbarVerticalCollapse" id="nv-assets">
+                                <li class="collapsed-nav-item-title d-none fs-8-5">Assets
+                                </li>
+                                <li class="nav-item"><a class="nav-link standalone-disabled" href="#" tabindex="-1" title="Part of the main EnergyGuard dashboard">
+                                    <div class="d-flex align-items-center"><span class="nav-link-icon"><span data-feather="database"></span></span><span class="nav-link-text fs-8-5 py-2">Datasets</span>
+                                    </div>
+                                </a>
+                                </li>
+                                <li class="nav-item"><a class="nav-link standalone-disabled" href="#" tabindex="-1" title="Part of the main EnergyGuard dashboard">
+                                    <div class="d-flex align-items-center"><span class="nav-link-icon"><span data-feather="cpu"></span></span><span class="nav-link-text fs-8-5 py-2">AI Models & Services</span>
+                                    </div>
+                                </a>
+                                </li>
+                                <li class="nav-item"><a class="nav-link standalone-disabled" href="#" tabindex="-1" title="Part of the main EnergyGuard dashboard">
+                                    <div class="d-flex align-items-center"><span class="nav-link-icon"><span data-feather="home"></span></span><span class="nav-link-text fs-8-5 py-2">DTs & Facilities</span>
+                                    </div>
+                                </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </li>
+
+                <li class="nav-item"><a class="nav-link standalone-disabled" href="#" tabindex="-1" title="Part of the main EnergyGuard dashboard">
+                    <div class="d-flex align-items-center"><span class="nav-link-icon"><span data-feather="server"></span></span><span class="nav-link-text fs-8-5 py-2">HPC Usage</span>
+                    </div>
+                </a>
+                </li>
+
+                <!-- The new section this whole project is building - a real, working link. -->
+                <li class="nav-item"><a class="nav-link {% if active_navbar_page == 'data_space' %}active{% endif %}" href="{% url 'data_space' %}">
+                    <div class="d-flex align-items-center"><span class="nav-link-icon"><span data-feather="share-2"></span></span><span class="nav-link-text fs-8-5 py-2">Data Space</span>
+                    </div>
+                </a>
+                </li>
+
+            </ul>
+        </div>
+    </div>
+
+    <!-- Vertical Navbar Footer -->
+    <div class="navbar-vertical-footer">
+        <button class="btn navbar-vertical-toggle border-0 fw-semibold w-100 white-space-nowrap d-flex align-items-center"><span class="uil uil-left-arrow-to-left fs-8-5 py-2"></span><span class="uil uil-arrow-from-right py-1"></span><span class="navbar-vertical-footer-text ms-2 fs-8-5">Collapsed View</span></button>
+    </div>
+</nav>
+
+<style>
+  .standalone-disabled { opacity: 0.45; cursor: not-allowed; }
+</style>

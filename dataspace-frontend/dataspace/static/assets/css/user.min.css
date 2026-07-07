@@ -1,0 +1,109 @@
+/* prettier-ignore */
+/*# sourceMappingURL=user.min.css.map */
+:root {
+  --eg-collapsed-flyout-width: 260px;
+}
+
+.navbar-vertical-collapsed .navbar-vertical[class*="navbar-expand-"] .nav-item-wrapper:hover .parent-wrapper.label-1 > .parent,
+.navbar-vertical-collapsed .navbar-vertical[class*="navbar-expand-"] .nav-item-wrapper:hover .nav-link-text-wrapper .nav-link-text {
+  width: var(--eg-collapsed-flyout-width) !important;
+}
+
+.navbar-vertical-collapsed .navbar-vertical[class*="navbar-expand-"] .nav-item-wrapper:hover .parent-wrapper.label-1 .parent-wrapper {
+  position: static !important;
+  left: auto !important;
+  top: auto !important;
+  padding-bottom: 0 !important;
+}
+
+.navbar-vertical-collapsed .navbar-vertical[class*="navbar-expand-"] .nav-item-wrapper:hover .parent-wrapper.label-1 .parent-wrapper > .parent {
+  width: 100% !important;
+  margin-left: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  padding-bottom: 0 !important;
+}
+
+.navbar-vertical-collapsed .navbar-vertical[class*="navbar-expand-"] .nav-item-wrapper:hover .parent-wrapper.label-1 .parent-wrapper > .parent::after {
+  display: none !important;
+}
+
+.navbar-vertical-collapsed .navbar-vertical[class*="navbar-expand-"] .nav-item-wrapper:hover .parent-wrapper.label-1 .parent-wrapper .collapsed-nav-item-title {
+  display: none !important;
+}
+
+/* Align dropdown-indicator icon with simple nav items in collapsed mode */
+.navbar-vertical-collapsed .navbar-vertical[class*="navbar-expand-"] .nav-link.dropdown-indicator.label-1 {
+  padding-left: 1.5rem;
+}
+
+/* Table row hover */
+#experimentsTable tbody tr:hover,
+#myDatasetsList tbody tr:hover,
+#publicDatasetsList tbody tr:hover,
+#myProjectsTable tbody tr:hover,
+#publicProjectsTable tbody tr:hover,
+#assessmentRunsTable tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+/* Gradient backgrounds */
+.bg-gradient-cyan-blue {
+  background: linear-gradient(135deg, #2DD4F0 0%, #1B78D4 100%);
+}
+
+/* Shared digital twin step-flow stepper (BER, ENGREEN, etc.) */
+.dt-stepper {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  position: relative;
+}
+.dt-stepper::before {
+  content: '';
+  position: absolute;
+  top: 22px;
+  left: 8%;
+  right: 8%;
+  border-top: 2px dotted var(--phoenix-border-color);
+  z-index: 0;
+}
+.dt-step-number {
+  display: block;
+  width: 22px;
+  height: 22px;
+  margin: .5rem auto 0;
+  border-radius: 50%;
+  background-color: var(--phoenix-tertiary-bg);
+  color: var(--phoenix-body-color);
+  font-size: .7rem;
+  font-weight: 700;
+  line-height: 22px;
+  border: 1px solid var(--phoenix-border-color);
+}
+
+/* Shared digital twin tab cards (BER, CEA, etc.) */
+.dt-tab-card {
+  transition: border-color .15s, box-shadow .15s;
+}
+.dt-tab-card:hover {
+  border-color: var(--phoenix-primary);
+}
+.dt-tab-card.active {
+  border-color: var(--phoenix-primary);
+  box-shadow: 0 0 0 1px var(--phoenix-primary);
+}
+.dt-tab-card .dt-tab-number {
+  width: 28px;
+  height: 28px;
+  font-weight: 600;
+  font-size: .8rem;
+  border: 1px solid var(--phoenix-border-color);
+  color: var(--phoenix-body-color);
+}
+.dt-tab-card.active .dt-tab-number {
+  background-color: var(--phoenix-primary);
+  border-color: var(--phoenix-primary);
+  color: #fff;
+}

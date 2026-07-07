@@ -1,0 +1,34 @@
+services:
+  dataspace-gateway:
+    build:
+      context: .
+      dockerfile: dataspace_gateway/Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      # Overrides the real .env's CORS setting for this local compose test -
+      # the browser (on the host) loads the frontend from localhost:8095, so
+      # that's the origin the gateway needs to allow, not the real deployment's.
+      DATASPACE_CORS_ALLOWED_ORIGINS: http://localhost:8095
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  dataspace-frontend:
+    build: ./dataspace-frontend
+    ports:
+      - "8095:8095"
+    environment:
+      # Must be reachable from the browser on the host, not the compose
+      # network - the frontend's JS calls this directly from the client,
+      # Django never proxies it. So this is localhost:8000 (the gateway's
+      # published host port), not http://dataspace-gateway:8000.
+      DATASPACE_GATEWAY_URL: http://localhost:8000
+      DEBUG: "true"
+    depends_on:
+      dataspace-gateway:
+        condition: service_healthy
