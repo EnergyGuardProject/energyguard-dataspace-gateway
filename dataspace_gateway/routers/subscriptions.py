@@ -73,7 +73,9 @@ async def respond_to_request(
     payload: RespondToRequest,
     authorization: str = Depends(get_authorization_header),
 ) -> IdResponse:
-    body = {"data_catalog_data_requests": payload.model_dump()}
+    # The Middleware needs the request's id in the body as well as in ?id=; without it
+    # it returns 200 with a *new* id and leaves the request's status unchanged.
+    body = {"data_catalog_data_requests": {**payload.model_dump(), "id": request_id}}
     response = await upstream_request(
         "POST",
         settings.enpower_base_url,

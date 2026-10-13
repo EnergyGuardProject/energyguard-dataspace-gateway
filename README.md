@@ -171,6 +171,8 @@ curl -X POST http://localhost:8000/subscriptions/requests/9340034c-f8bf-40c0-98e
 
 Any extra fields from the request row (as returned by `GET /subscriptions/requests`)
 may be included in the body alongside `status` — they are forwarded upstream as-is.
+The gateway always adds the request's `id` to the upstream body, which the Middleware
+requires for the status change to take effect.
 
 ### Data Provide / Consume
 
