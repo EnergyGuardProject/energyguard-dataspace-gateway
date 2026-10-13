@@ -146,7 +146,7 @@ curl -X POST http://localhost:8000/offerings \
 | Method | Path | Upstream call | Description |
 |---|---|---|---|
 | GET | `/subscriptions/mine` | `GET /api/datalist/my_subscriptions` | List Data Offerings you're subscribed to |
-| POST | `/subscriptions` | `POST /api/dataset/v2/new_subscription` | Request a subscription to another participant's Data Offering |
+| POST | `/subscriptions` | `POST /api/dataset/v2/my_subscriptions` | Request a subscription to another participant's Data Offering |
 | GET | `/subscriptions/requests` | `GET /api/datalist/requests_on_offered_services` | List subscription requests received on your own Data Offerings |
 | POST | `/subscriptions/requests/{request_id}/respond` | `POST /api/dataset/v2/requests_on_offered_services?id=...` | Accept or reject a pending request |
 

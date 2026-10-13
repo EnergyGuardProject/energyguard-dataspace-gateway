@@ -22,3 +22,16 @@ async def test_incoming_requests(client, auth_headers):
             f"  - \"{item['title']}\" requested by {item['user_requesting']} "
             f"status={item['status']} request_id={item['request_id']}"
         )
+
+
+async def test_create_subscription(client, auth_headers):
+    # Regression: the Middleware's documented /new_subscription 500s with
+    # "Form does not exist"; the gateway must use /my_subscriptions instead.
+    resp = await client.post(
+        "/subscriptions",
+        headers=auth_headers,
+        json={"data_catalog_data_offering_id": "33c5edca-c2d6-4bba-b6ee-1e21f95584b5"},
+    )
+    assert resp.status_code == 200, resp.text
+    assert resp.json().get("response")
+    print(f"\nPASS POST /subscriptions -> request id {resp.json()['response']}")

@@ -32,10 +32,12 @@ async def create_subscription(
     payload: SubscriptionCreate, authorization: str = Depends(get_authorization_header)
 ) -> IdResponse:
     body = {"data_catalog_data_requests": {"id": None, **payload.model_dump()}}
+    # The Middleware's POST /my_subscriptions is what actually creates the request;
+    # the documented POST /new_subscription always 500s with "Form does not exist".
     response = await upstream_request(
         "POST",
         settings.enpower_base_url,
-        "/api/dataset/v2/new_subscription",
+        "/api/dataset/v2/my_subscriptions",
         authorization=authorization,
         json=body,
     )
