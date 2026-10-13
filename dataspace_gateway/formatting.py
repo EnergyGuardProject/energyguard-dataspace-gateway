@@ -1,4 +1,5 @@
 import re
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 _CARET_TAG_RE = re.compile(r"<i[^>]*></i>")
@@ -42,9 +43,36 @@ def parse_subscribers(raw: Optional[str]) -> List[Dict[str, Any]]:
     return subscribers
 
 
+def parse_timestamp(raw: Optional[str]) -> Optional[str]:
+    """Normalizes upstream's mixed timestamp formats to ISO-8601 UTC.
+
+    Some lists return '13/10/2026 09:47', others '2026-10-13T09:47:14Z' - both are UTC.
+    Returns None for anything unrecognized rather than guessing.
+    """
+    if not raw:
+        return None
+    for fmt in ("%d/%m/%Y %H:%M", "%Y-%m-%dT%H:%M:%SZ"):
+        try:
+            parsed = datetime.strptime(raw, fmt).replace(tzinfo=timezone.utc)
+        except ValueError:
+            continue
+        return parsed.isoformat().replace("+00:00", "Z")
+    return None
+
+
 def enrich_category_and_subscribers(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """Adds category_path / subscribers alongside the raw fields, in place."""
+    """Adds clean, structured fields alongside the raw upstream ones, in place.
+
+    category_path / subscribers (from HTML markup), created_at (ISO timestamp) and
+    requester_company / requester_username (split from 'Company <caret> user').
+    """
     for item in items:
+        if "created_on" in item:
+            item["created_at"] = parse_timestamp(item["created_on"])
+        if "user_requesting" in item:
+            parts = parse_category_breadcrumb(item["user_requesting"])
+            item["requester_company"] = parts[0] if parts else None
+            item["requester_username"] = parts[1] if len(parts) > 1 else None
         if "category" in item:
             item["category_path"] = parse_category_breadcrumb(item["category"])
         if "subscriptions" in item:

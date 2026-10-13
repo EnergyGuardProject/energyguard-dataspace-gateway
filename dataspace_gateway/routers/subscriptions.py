@@ -19,7 +19,24 @@ async def list_my_subscriptions(authorization: str = Depends(get_authorization_h
     response = await upstream_request(
         "GET", settings.enpower_base_url, "/api/datalist/my_subscriptions", authorization=authorization
     )
-    return response.json()
+    subscriptions = enrich_category_and_subscribers(response.json())
+
+    # A subscription row doesn't say who provides it. Its user_offering_id is the
+    # provider's user id, which the catalog lists as cf_id_1 alongside their
+    # username and email - so look that up. Best effort: it's extra detail, and a
+    # catalog failure shouldn't break the subscription list itself.
+    try:
+        catalog = await upstream_request(
+            "GET", settings.enpower_base_url, "/api/datalist/my_catalog", authorization=authorization
+        )
+    except HTTPException:
+        return subscriptions
+    providers = {row["cf_id_1"]: row for row in catalog.json() if row.get("cf_id_1")}
+    for sub in subscriptions:
+        provider = providers.get(sub.get("user_offering_id"))
+        sub["provider_username"] = provider.get("created_by_username") if provider else None
+        sub["provider_email"] = provider.get("email") if provider else None
+    return subscriptions
 
 
 @router.post(
