@@ -36,6 +36,12 @@ async def provide_data(
 @router.get(
     "/consumed",
     summary="List Data Entities published under my subscriptions",
+    description=(
+        "Only entities I'm an authorized (accepted-subscription) consumer of - these are "
+        "guaranteed downloadable via GET /data/consumed/{id}. Entities I've only provided "
+        "myself aren't included here, since the connector's consume-data endpoint doesn't "
+        "let a provider retrieve their own upload without also being a subscriber."
+    ),
 )
 async def list_consumed_data(authorization: str = Depends(get_authorization_header)) -> List[Any]:
     response = await upstream_request(
@@ -63,13 +69,33 @@ async def consume_data_by_id(
     ),
     authorization: str = Depends(get_download_authorization),
 ) -> Response:
-    response = await upstream_request(
-        "GET",
-        settings.connector_base_url,
-        "/api/consume-data/by-id",
-        authorization=authorization,
-        params={"id": entity_id},
-    )
+    try:
+        response = await upstream_request(
+            "GET",
+            settings.connector_base_url,
+            "/api/consume-data/by-id",
+            authorization=authorization,
+            params={"id": entity_id},
+        )
+    except HTTPException as exc:
+        upstream_message = exc.detail.get("message") if isinstance(exc.detail, dict) else None
+        if exc.status_code >= 500 and upstream_message == "File cannot be retrieved.":
+            # The connector's real access rule: providing an entity doesn't grant you
+            # download rights to it - only an accepted subscriber to its Data Offering
+            # can retrieve it. This is the exact upstream message for that case.
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "error_code": "not_an_authorized_consumer",
+                    "message": (
+                        "This can't be downloaded because you're not an approved "
+                        "subscriber to its Data Offering. Providing data doesn't grant "
+                        "download access to it yourself - only accepted subscribers can "
+                        "retrieve it, per the dataspace's access model."
+                    ),
+                },
+            ) from exc
+        raise
 
     try:
         body = response.json()

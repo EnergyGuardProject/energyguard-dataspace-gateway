@@ -16,7 +16,11 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_allowed_origins_list,
+    allow_origins=[
+        *settings.cors_allowed_origins_list,
+        "http://127.0.0.1:8080",
+        "https://dashboard.energy-guard.eu",
+    ],
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],

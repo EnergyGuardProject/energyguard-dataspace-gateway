@@ -11,7 +11,7 @@
     <div class="row g-3 mb-5 align-items-end justify-content-between">
       <div class="col-auto">
         <h2 class="mb-2 text-body-emphasis">Data Space</h2>
-        <h5 class="text-body-tertiary fw-semibold">EnerTEF dataspace &middot; energy data exchange with external participants</h5>
+        <h5 class="text-body-tertiary fw-semibold">TEF Data Space &middot; energy data exchange with external participants</h5>
       </div>
       <div class="col-auto d-none" id="signedInAs">
         <span class="fs-9 text-body-secondary">Signed in as <span class="fw-semibold text-body-emphasis" id="signedInAsUsername"></span></span>
@@ -182,7 +182,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <p class="fs-9 text-body-secondary">Publish a service others in EnerTEF can discover and subscribe to.</p>
+        <p class="fs-9 text-body-secondary">Publish a service others in TEF Data Space can discover and subscribe to.</p>
         <div class="mb-3">
           <label class="form-label fs-9" for="offeringTitleInput">Title</label>
           <input type="text" class="form-control" id="offeringTitleInput" placeholder="e.g. Grid Fault Detection Feed">
@@ -229,13 +229,9 @@
           <label class="form-label fs-9" for="uploadDescInput">Description</label>
           <textarea class="form-control" id="uploadDescInput" rows="2" placeholder="Optional description"></textarea>
         </div>
-        <div class="mb-3">
-          <label class="form-label fs-9" for="uploadFilenameInput">Filename</label>
-          <input type="text" class="form-control" id="uploadFilenameInput" value="message.txt">
-        </div>
         <div class="mb-2">
-          <label class="form-label fs-9" for="uploadContentInput">File content</label>
-          <textarea class="form-control" id="uploadContentInput" rows="3">hello from EnergyGuard</textarea>
+          <label class="form-label fs-9" for="uploadFileInput">File</label>
+          <input type="file" class="form-control" id="uploadFileInput">
         </div>
         <div class="text-danger fs-9 d-none" id="uploadError"></div>
       </div>

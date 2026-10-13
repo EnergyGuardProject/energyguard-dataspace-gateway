@@ -273,3 +273,20 @@ dataspace_gateway/
     subscriptions.py   /subscriptions/*
     data.py            /data/*
 ```
+
+## Provider steps
+
+**As a Provider (you have data to share):**
+
+1. **Create Offering** — register that you have something to share (pick a category + business object). This just creates a listing in the catalog, no data yet.
+2. Someone else browses the catalog and hits **Subscribe** on your offering → this creates a pending request that lands in your **Incoming Requests**.
+3. You **Accept** or **Reject** that request. Only once accepted is that person allowed to receive data from this offering.
+4. You **Upload Data** to the offering (can do this any time, repeatedly — each upload is one file/"Data Entity").
+5. Anyone with an accepted subscription to that offering can now see and download the files you uploaded.
+
+**As a Consumer (you want someone else's data):**
+
+1. **Browse Catalog** — see offerings from everyone in the dataspace.
+2. Click **Subscribe** on one you want → sends a request to its owner.
+3. Wait for them to Accept it in their Incoming Requests.
+4. Once accepted, it shows up in **My Subscriptions**, and any files the provider has uploaded (or uploads later) appear for you to download.

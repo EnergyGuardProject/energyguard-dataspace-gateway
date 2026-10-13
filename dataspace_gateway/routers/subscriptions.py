@@ -1,6 +1,6 @@
 from typing import Any, List
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 
 from dataspace_gateway.config import settings
 from dataspace_gateway.dependencies import get_authorization_header
@@ -80,4 +80,30 @@ async def respond_to_request(
         params={"id": request_id},
         json=body,
     )
-    return response.json()
+    result = response.json()
+
+    # The Middleware has been observed returning a 200 here while silently
+    # leaving the request's status unchanged - re-read it back and only report
+    # success if the status actually took, instead of trusting the response.
+    verify_response = await upstream_request(
+        "GET",
+        settings.enpower_base_url,
+        "/api/datalist/requests_on_offered_services",
+        authorization=authorization,
+    )
+    not_applied = any(
+        row.get("request_id") == request_id and row.get("status") != payload.status
+        for row in verify_response.json()
+    )
+    if not_applied:
+        raise HTTPException(
+            status_code=502,
+            detail={
+                "error_code": "upstream_response_not_applied",
+                "message": (
+                    "The dataspace Middleware accepted this response but didn't actually "
+                    "update the request's status - contact the dataspace operator."
+                ),
+            },
+        )
+    return result

@@ -259,21 +259,38 @@
   function openUploadModal(offeringId, offeringTitle) {
     document.getElementById("uploadTargetId").value = offeringId;
     document.getElementById("uploadTargetTitle").textContent = offeringTitle;
+    document.getElementById("uploadFileInput").value = "";
     document.getElementById("uploadError").classList.add("d-none");
     bootstrap.Modal.getOrCreateInstance(document.getElementById("uploadDataModal")).show();
+  }
+
+  function readFileAsBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(",").pop());
+      reader.onerror = () => reject(new Error("Couldn't read the selected file"));
+      reader.readAsDataURL(file);
+    });
   }
 
   document.getElementById("uploadSubmitBtn").addEventListener("click", async () => {
     const errorEl = document.getElementById("uploadError");
     errorEl.classList.add("d-none");
-    const payload = {
-      title: document.getElementById("uploadTitleInput").value.trim() || "Untitled upload",
-      description: document.getElementById("uploadDescInput").value.trim() || null,
-      filename: document.getElementById("uploadFilenameInput").value.trim() || "message.txt",
-      file: document.getElementById("uploadContentInput").value,
-      data_offering_id: document.getElementById("uploadTargetId").value,
-    };
+    const file = document.getElementById("uploadFileInput").files[0];
+    if (!file) {
+      errorEl.textContent = "Choose a file to upload.";
+      errorEl.classList.remove("d-none");
+      return;
+    }
     try {
+      const payload = {
+        title: document.getElementById("uploadTitleInput").value.trim() || "Untitled upload",
+        description: document.getElementById("uploadDescInput").value.trim() || null,
+        filename: file.name,
+        file: await readFileAsBase64(file),
+        fileSize: String(file.size),
+        data_offering_id: document.getElementById("uploadTargetId").value,
+      };
       await Api.provideData(payload);
       bootstrap.Modal.getOrCreateInstance(document.getElementById("uploadDataModal")).hide();
       showToast("Uploaded to " + document.getElementById("uploadTargetTitle").textContent);

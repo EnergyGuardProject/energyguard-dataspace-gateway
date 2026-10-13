@@ -36,7 +36,7 @@ cd dataspace-frontend
 python manage.py runserver 8081
 ```
 
-Open http://localhost:8081/ - log in with your Middleware/EnerTEF credentials
+Open http://localhost:8081/ - log in with your Middleware/TEF Data Space credentials
 (the same ones used against the gateway directly).
 
 Note: the gateway's `DATASPACE_CORS_ALLOWED_ORIGINS` must include
