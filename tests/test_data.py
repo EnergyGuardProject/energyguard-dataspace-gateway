@@ -67,3 +67,18 @@ async def test_provide_data(client, auth_headers, generic_business_object_id):
     body = resp.json()
     assert "id" in body
     print(f"PASS /data/provide -> created entity {body['id']}")
+
+
+async def test_download_failure_is_reported_as_502(client, monkeypatch):
+    """Offline: a connector 500 must not be presented as a confirmed access-rule 403."""
+    from fastapi import HTTPException
+
+    from dataspace_gateway.routers import data
+
+    async def failing_upstream(*args, **kwargs):
+        raise HTTPException(status_code=500, detail={"message": "No message available"})
+
+    monkeypatch.setattr(data, "upstream_request", failing_upstream)
+    resp = await client.get("/data/consumed/some-id", headers={"Authorization": "Bearer x"})
+    assert resp.status_code == 502
+    assert resp.json()["detail"]["error_code"] == "connector_file_retrieval_failed"

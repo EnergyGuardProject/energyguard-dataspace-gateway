@@ -37,10 +37,9 @@ async def provide_data(
     "/consumed",
     summary="List Data Entities published under my subscriptions",
     description=(
-        "Only entities I'm an authorized (accepted-subscription) consumer of - these are "
-        "guaranteed downloadable via GET /data/consumed/{id}. Entities I've only provided "
-        "myself aren't included here, since the connector's consume-data endpoint doesn't "
-        "let a provider retrieve their own upload without also being a subscriber."
+        "Entities from Data Offerings I have an accepted subscription to. Files uploaded by "
+        "my own account appear here once I've subscribed to my own offering, but the "
+        "connector currently fails to return them via GET /data/consumed/{id}."
     ),
 )
 async def list_consumed_data(authorization: str = Depends(get_authorization_header)) -> List[Any]:
@@ -78,21 +77,20 @@ async def consume_data_by_id(
             params={"id": entity_id},
         )
     except HTTPException as exc:
-        upstream_message = exc.detail.get("message") if isinstance(exc.detail, dict) else None
-        if exc.status_code >= 500 and upstream_message == "File cannot be retrieved.":
-            # The connector's real access rule: providing an entity doesn't grant you
-            # download rights to it - only an accepted subscriber to its Data Offering
-            # can retrieve it. This is the exact upstream message for that case.
+        if exc.status_code >= 500:
+            # Observed: files uploaded by the requesting account itself fail here with a
+            # bare 500, even after it subscribed to its own offering and was accepted,
+            # while other providers' files download fine. The cause is unconfirmed (open
+            # question with the Middleware developers), so don't claim one.
             raise HTTPException(
-                status_code=403,
+                status_code=502,
                 detail={
-                    "error_code": "not_an_authorized_consumer",
+                    "error_code": "connector_file_retrieval_failed",
                     "message": (
-                        "This can't be downloaded because you're not an approved "
-                        "subscriber to its Data Offering. Providing data doesn't grant "
-                        "download access to it yourself - only accepted subscribers can "
-                        "retrieve it, per the dataspace's access model."
+                        "The connector couldn't return this file. Files uploaded by the "
+                        "same account that requests them have been seen to fail this way."
                     ),
+                    "upstream_detail": exc.detail,
                 },
             ) from exc
         raise
