@@ -169,10 +169,11 @@ curl -X POST http://localhost:8000/subscriptions/requests/9340034c-f8bf-40c0-98e
   -d '{"status": "accept"}'
 ```
 
-Any extra fields from the request row (as returned by `GET /subscriptions/requests`)
-may be included in the body alongside `status` — they are forwarded upstream as-is.
-The gateway always adds the request's `id` to the upstream body, which the Middleware
-requires for the status change to take effect.
+The body takes `status` (`accept` or `reject`) and an optional `comments`; other fields
+are rejected with a 422. The gateway adds the request's `id` to the upstream body, which the
+Middleware requires for the status change to take effect. Don't send the raw request row:
+without `id` it silently does nothing, and with it the row's `created_on` makes the
+Middleware return a 500.
 
 ### Data Provide / Consume
 

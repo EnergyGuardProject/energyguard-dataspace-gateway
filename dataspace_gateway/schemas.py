@@ -66,14 +66,15 @@ class SubscriptionCreate(BaseModel):
 class RespondToRequest(BaseModel):
     """Body for accepting/rejecting a pending subscription request.
 
-    Extra fields are allowed and passed through untouched: the upstream API accepts
-    either the minimal identifying fields or the full request row (as returned by
-    GET /subscriptions/requests) with only `status` changed.
+    Only these fields are accepted. The Middleware's own docs show the raw request row
+    as the body, but that doesn't work: without the request id it silently does
+    nothing, and with it the row's dd/mm/yyyy `created_on` makes it 500.
     """
 
-    model_config = ConfigDict(extra="allow")
+    model_config = ConfigDict(extra="forbid")
 
     status: Literal["accept", "reject"]
+    comments: Optional[str] = None
 
 
 # --- Data provide / consume ------------------------------------------------------

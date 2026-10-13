@@ -35,3 +35,13 @@ async def test_create_subscription(client, auth_headers):
     assert resp.status_code == 200, resp.text
     assert resp.json().get("response")
     print(f"\nPASS POST /subscriptions -> request id {resp.json()['response']}")
+
+
+async def test_respond_rejects_extra_fields(client):
+    """Offline: sending the raw request row is a 422, not a silent upstream no-op/500."""
+    resp = await client.post(
+        "/subscriptions/requests/abc/respond",
+        headers={"Authorization": "Bearer x"},
+        json={"status": "accept", "created_on": "13/10/2026 09:47"},
+    )
+    assert resp.status_code == 422

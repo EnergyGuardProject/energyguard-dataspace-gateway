@@ -81,8 +81,8 @@ async def list_incoming_requests(authorization: str = Depends(get_authorization_
     response_model=IdResponse,
     summary="Accept or reject a pending subscription request",
     description=(
-        "Set `status` to `accept` or `reject`. Any additional fields from the request row "
-        "(as returned by GET /subscriptions/requests) may be included and are forwarded as-is."
+        "Set `status` to `accept` or `reject`, with an optional `comments`. The gateway adds the "
+        "request's id to the upstream body itself, which the Middleware requires."
     ),
 )
 async def respond_to_request(
@@ -92,7 +92,7 @@ async def respond_to_request(
 ) -> IdResponse:
     # The Middleware needs the request's id in the body as well as in ?id=; without it
     # it returns 200 with a *new* id and leaves the request's status unchanged.
-    body = {"data_catalog_data_requests": {**payload.model_dump(), "id": request_id}}
+    body = {"data_catalog_data_requests": {**payload.model_dump(exclude_none=True), "id": request_id}}
     response = await upstream_request(
         "POST",
         settings.enpower_base_url,
