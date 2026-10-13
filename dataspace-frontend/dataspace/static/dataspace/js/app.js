@@ -23,6 +23,31 @@
     new bootstrap.Toast(el, { autohide: true, delay: 4000 }).show();
   }
 
+  // "2026-10-13T09:47:14Z" -> "2026-10-13 12:47" in the viewer's local time.
+  function formatDateTime(iso) {
+    if (!iso) return "";
+    const d = new Date(iso);
+    if (isNaN(d)) return "";
+    const pad = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
+  // Small outlined badge for a data format (json, csv, ...). Empty when unknown.
+  function formatBadge(format) {
+    if (!format) return "";
+    return `<span class="badge badge-phoenix badge-phoenix-secondary fs-11 text-uppercase"><span class="badge-label">${escapeHtml(format)}</span></span>`;
+  }
+
+  function fileExtension(filename) {
+    const i = (filename || "").lastIndexOf(".");
+    return i > 0 ? filename.slice(i + 1).toLowerCase() : "";
+  }
+
+  // Joins the non-empty parts into one muted metadata line.
+  function metaLine(parts) {
+    return parts.filter(Boolean).map(escapeHtml).join(" &middot; ");
+  }
+
   function parseCategoryTop(item) {
     if (item.category_path && item.category_path.length) return item.category_path[0];
     return "Other";
@@ -92,14 +117,18 @@
       <tr>
         <td class="ps-2">
           <div class="fw-semibold text-body-emphasis">${escapeHtml(e.data_title)}</div>
-          <div class="fs-9 text-body-tertiary">${escapeHtml(e.file_name)}</div>
+          ${e.data_description ? `<div class="fs-9 text-body-secondary">${escapeHtml(e.data_description)}</div>` : ""}
+          <div class="fs-9 text-body-tertiary">${escapeHtml(e.file_name)} ${formatBadge(fileExtension(e.file_name))}</div>
         </td>
-        <td>${escapeHtml(e.offering_title)}</td>
+        <td>
+          <div>${escapeHtml(e.offering_title)}</div>
+          <div class="fs-9 text-body-tertiary">${metaLine([e.data_catalog_category_name, e.data_catalog_business_object_code, e.data_catalog_service_code])}</div>
+        </td>
         <td>
           <div class="fw-semibold">${escapeHtml(e.provider_company_name)}</div>
           <div class="fs-9 text-body-tertiary">${escapeHtml(e.provider_username)}</div>
         </td>
-        <td class="fs-9 text-body-tertiary">${escapeHtml((e.created_on || "").slice(0, 10))}</td>
+        <td class="fs-9 text-body-tertiary">${escapeHtml(formatDateTime(e.created_on))}</td>
         <td class="pe-2 text-end">
           <a class="btn btn-phoenix-secondary btn-sm" href="${Api.downloadUrl(e.id, e.file_name)}" download="${escapeHtml(e.file_name)}">Download</a>
         </td>
@@ -166,8 +195,9 @@
         return `
         <div class="border rounded-3 p-3 d-flex justify-content-between align-items-center">
           <div>
-            <div class="fw-semibold text-body-emphasis">${escapeHtml(s.title)}</div>
-            <div class="fs-9 text-body-tertiary">${escapeHtml(s.category_name)}</div>
+            <div class="fw-semibold text-body-emphasis">${escapeHtml(s.title)} ${formatBadge(s.profile_selector)}</div>
+            <div class="fs-9 text-body-tertiary">${metaLine([s.category_name && s.category_code ? s.category_name + " (" + s.category_code + ")" : s.category_name])}</div>
+            <div class="fs-9 text-body-tertiary">${metaLine([s.provider_username && "Provider: " + s.provider_username, s.provider_email, s.created_at && "Requested " + formatDateTime(s.created_at)])}</div>
           </div>
           <span class="badge badge-phoenix ${badge} fs-11"><span class="badge-label">${label}</span></span>
         </div>`;
@@ -231,7 +261,10 @@
           : `<button class="btn btn-primary btn-sm" data-subscribe-id="${escapeHtml(item.cf_id)}">Subscribe</button>`;
         return `
         <tr>
-          <td class="ps-2 fw-semibold text-body-emphasis">${escapeHtml(item.title)}</td>
+          <td class="ps-2">
+            <div class="fw-semibold text-body-emphasis">${escapeHtml(item.title)} ${formatBadge(item.profile_selector)}</div>
+            <div class="fs-9 text-body-tertiary">${metaLine([item.created_at && "Created " + formatDateTime(item.created_at)])}</div>
+          </td>
           <td>${escapeHtml(parseCategoryTop(item))}</td>
           <td>
             <div class="fw-semibold">${escapeHtml(item.email)}</div>
@@ -289,11 +322,11 @@
         <tr>
           <td class="ps-2">
             <div class="fw-semibold text-body-emphasis">${escapeHtml(o.title)}</div>
-            <div class="fs-9 text-body-tertiary">${escapeHtml((o.cf_id || "").slice(0, 8))}&hellip;</div>
+            <div class="fs-9 text-body-tertiary">${formatBadge(o.profile_selector)} ${escapeHtml((o.cf_id || "").slice(0, 8))}&hellip;</div>
           </td>
           <td>${escapeHtml(parseCategoryTop(o))}</td>
           <td><span class="badge badge-phoenix ${badge} fs-11"><span class="badge-label">${escapeHtml(o.status)}</span></span></td>
-          <td class="fs-9 text-body-tertiary">${escapeHtml((o.created_on || "").slice(0, 10))}</td>
+          <td class="fs-9 text-body-tertiary">${escapeHtml(formatDateTime(o.created_at))}</td>
           <td class="pe-2 text-end">
             <button class="btn btn-phoenix-secondary btn-sm" data-upload-for="${escapeHtml(o.cf_id)}" data-upload-title="${escapeHtml(o.title)}">Upload Data</button>
           </td>
@@ -440,7 +473,8 @@
       <div class="border rounded-3 p-3 d-flex justify-content-between align-items-center mb-2" data-request-row="${escapeHtml(r.request_id)}">
         <div>
           <div class="fw-semibold text-body-emphasis">${escapeHtml(r.title)}</div>
-          <div class="fs-9 text-body-tertiary">Requested by ${escapeHtml(r.user_requesting)}</div>
+          <div class="fs-9 text-body-tertiary">${metaLine([(r.category_path || []).join(" \u203a ")])}</div>
+          <div class="fs-9 text-body-tertiary">${metaLine(["Requested by " + (r.requester_username || ""), r.requester_company, r.created_at && formatDateTime(r.created_at)])}</div>
         </div>
         ${right}
       </div>`;
