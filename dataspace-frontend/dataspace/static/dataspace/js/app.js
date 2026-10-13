@@ -109,28 +109,79 @@
     return entities;
   }
 
+  // ---- Status tabs (All | Accepted | Rejected | Pending) ---------------
+
+  const STATUS_TABS = [
+    { key: "", label: "All" },
+    { key: "accept", label: "Accepted" },
+    { key: "reject", label: "Rejected" },
+    { key: "pending", label: "Pending" },
+  ];
+
+  // The Middleware's status strings vary ("accept"/"accepted", "reject"/"rejected").
+  function statusKey(status) {
+    const s = (status || "").toLowerCase();
+    if (s.startsWith("accept")) return "accept";
+    if (s.startsWith("reject")) return "reject";
+    return "pending";
+  }
+
+  function renderStatusTabs(containerId, rows, activeKey, onSelect) {
+    const counts = { accept: 0, reject: 0, pending: 0 };
+    rows.forEach((r) => counts[statusKey(r.status)]++);
+    const container = document.getElementById(containerId);
+    container.innerHTML = STATUS_TABS.map((t) => {
+      const n = t.key ? counts[t.key] : rows.length;
+      const active = activeKey === t.key ? "active" : "";
+      return `<li class="nav-item"><a class="nav-link fs-9 ${active}" href="#" data-status="${t.key}">${t.label} <span class="text-body-tertiary fw-semibold">(${n})</span></a></li>`;
+    }).join("");
+    container.querySelectorAll("a").forEach((a) => {
+      a.addEventListener("click", (e) => {
+        e.preventDefault();
+        onSelect(a.dataset.status);
+      });
+    });
+  }
+
   // ---- My Subscriptions ------------------------------------------------
 
-  async function loadMySubscriptions() {
-    const subs = await Api.getMySubscriptions();
-    document.getElementById("statSubscriptions").textContent = subs.filter((s) => s.status === "accept").length;
-    document.getElementById("mySubsCount").textContent = subs.length + " subscriptions";
-    const list = document.getElementById("mySubsList");
-    list.innerHTML = subs
+  let mySubsRows = [];
+  let mySubsStatus = "";
+
+  function renderMySubscriptions() {
+    renderStatusTabs("mySubsStatusTabs", mySubsRows, mySubsStatus, (key) => {
+      mySubsStatus = key;
+      renderMySubscriptions();
+    });
+    const shown = mySubsRows.filter((s) => !mySubsStatus || statusKey(s.status) === mySubsStatus);
+    document.getElementById("mySubsCount").textContent = shown.length + " subscriptions";
+    const badges = {
+      accept: ["badge-phoenix-success", "Active"],
+      reject: ["badge-phoenix-danger", "Rejected"],
+      pending: ["badge-phoenix-warning", "Pending"],
+    };
+    document.getElementById("mySubsList").innerHTML = shown
       .map((s) => {
-        const badge = s.status === "accept" ? "badge-phoenix-success" : "badge-phoenix-warning";
-        const label = s.status === "accept" ? "Active" : s.status;
+        const [badge, label] = badges[statusKey(s.status)];
         return `
         <div class="border rounded-3 p-3 d-flex justify-content-between align-items-center">
           <div>
             <div class="fw-semibold text-body-emphasis">${escapeHtml(s.title)}</div>
             <div class="fs-9 text-body-tertiary">${escapeHtml(s.category_name)}</div>
           </div>
-          <span class="badge badge-phoenix ${badge} fs-11"><span class="badge-label">${escapeHtml(label)}</span></span>
+          <span class="badge badge-phoenix ${badge} fs-11"><span class="badge-label">${label}</span></span>
         </div>`;
       })
       .join("");
-    return subs;
+  }
+
+  async function loadMySubscriptions() {
+    mySubsRows = await Api.getMySubscriptions();
+    document.getElementById("statSubscriptions").textContent = mySubsRows.filter(
+      (s) => statusKey(s.status) === "accept"
+    ).length;
+    renderMySubscriptions();
+    return mySubsRows;
   }
 
   // ---- Browse Catalog ----------------------------------------------------
@@ -359,26 +410,41 @@
 
   // ---- Incoming Requests -------------------------------------------------
 
-  async function loadIncomingRequests() {
-    const requests = await Api.getIncomingRequests();
-    document.getElementById("requestsCount").textContent = requests.length + " pending requests";
+  let requestRows = [];
+  let requestStatus = "";
+
+  function renderIncomingRequests() {
+    renderStatusTabs("requestsStatusTabs", requestRows, requestStatus, (key) => {
+      requestStatus = key;
+      renderIncomingRequests();
+    });
+    const shown = requestRows.filter((r) => !requestStatus || statusKey(r.status) === requestStatus);
+    document.getElementById("requestsCount").textContent = shown.length + " requests";
     const list = document.getElementById("requestsList");
-    const emptyState = document.getElementById("requestsEmptyState");
-    emptyState.classList.toggle("d-none", requests.length !== 0);
-    list.innerHTML = requests
-      .map(
-        (r) => `
+    document.getElementById("requestsEmptyState").classList.toggle("d-none", shown.length !== 0);
+    const badges = {
+      accept: ["badge-phoenix-success", "Accepted"],
+      reject: ["badge-phoenix-danger", "Rejected"],
+    };
+    list.innerHTML = shown
+      .map((r) => {
+        const key = statusKey(r.status);
+        const right =
+          key === "pending"
+            ? `<div class="d-flex gap-2">
+          <button class="btn btn-outline-danger btn-sm" data-respond="${escapeHtml(r.request_id)}" data-decision="reject">Reject</button>
+          <button class="btn btn-primary btn-sm" data-respond="${escapeHtml(r.request_id)}" data-decision="accept">Accept</button>
+        </div>`
+            : `<span class="badge badge-phoenix ${badges[key][0]} fs-11"><span class="badge-label">${badges[key][1]}</span></span>`;
+        return `
       <div class="border rounded-3 p-3 d-flex justify-content-between align-items-center mb-2" data-request-row="${escapeHtml(r.request_id)}">
         <div>
           <div class="fw-semibold text-body-emphasis">${escapeHtml(r.title)}</div>
           <div class="fs-9 text-body-tertiary">Requested by ${escapeHtml(r.user_requesting)}</div>
         </div>
-        <div class="d-flex gap-2">
-          <button class="btn btn-outline-danger btn-sm" data-respond="${escapeHtml(r.request_id)}" data-decision="reject">Reject</button>
-          <button class="btn btn-primary btn-sm" data-respond="${escapeHtml(r.request_id)}" data-decision="accept">Accept</button>
-        </div>
-      </div>`
-      )
+        ${right}
+      </div>`;
+      })
       .join("");
 
     list.querySelectorAll("[data-respond]").forEach((btn) => {
@@ -396,7 +462,12 @@
         }
       });
     });
-    return requests;
+  }
+
+  async function loadIncomingRequests() {
+    requestRows = await Api.getIncomingRequests();
+    renderIncomingRequests();
+    return requestRows;
   }
 
   // ---- boot --------------------------------------------------------
