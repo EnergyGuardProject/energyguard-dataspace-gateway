@@ -293,3 +293,4 @@ dataspace_gateway/
 2. Click **Subscribe** on one you want → sends a request to its owner.
 3. Wait for them to Accept it in their Incoming Requests.
 4. Once accepted, it shows up in **My Subscriptions**, and any files the provider has uploaded (or uploads later) appear for you to download.
+> If a download fails with a `502`, the gateway reached the connector but the connector returned an error; check the connector logs and that your subscription is still accepted.
