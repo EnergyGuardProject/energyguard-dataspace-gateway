@@ -1,4 +1,131 @@
-# EnergyGuard Data Space Gateway
+# EnergyGuard Data Space
+
+The **Data Space** section of the EnergyGuard dashboard lets you exchange energy
+data with other participants of the TEF Data Space. You can publish datasets you
+own, discover what others offer, ask for access, and download what you are
+allowed to receive, all from one page.
+
+You sign in with your **Middleware account** (the same username and password used
+for the TEF Data Space). This is separate from your EnergyGuard login: the page
+asks for it the first time, and signs you out again when you close the browser tab.
+
+## Key terms
+
+| Term | Meaning |
+|---|---|
+| **Offering** | A listing a provider publishes: "I have data of this kind". It holds no files itself. |
+| **Subscription** | A consumer's request for access to someone's offering. The provider must accept it. |
+| **Data entity** | One uploaded file under an offering. Subscribers receive these. |
+| **Format** | The file format of an offering (`json`, `csv` or `xml`), shown as a small badge. |
+| **Category / business object** | Where an offering sits in the catalog, for example *Generic > ...*. |
+
+## What's on the page
+
+### Summary cards
+
+Four numbers at the top give you the state of your account at a glance:
+
+| Card | What it counts |
+|---|---|
+| **Active Subscriptions** | Your subscriptions that the provider has accepted. You are receiving data from these now. |
+| **Data Entities Received** | Files available to you through those subscriptions. |
+| **Offerings in Catalog** | Offerings published by others that you can subscribe to, with the number of participants behind them. |
+| **Offerings Published** | Offerings you have created as a provider. |
+
+### My Data
+
+Files you have received through your accepted subscriptions.
+
+| Field | What it shows |
+|---|---|
+| Title and description | What the provider called the file, and their optional description |
+| File name and format badge | The file name, with its format taken from the extension |
+| From offering | The offering it was uploaded to, with its category, business object code and service code |
+| Provider | The provider's company and username |
+| Received | When the file arrived, in your local time |
+| **Download** | Saves the file to your computer |
+
+### My Subscriptions
+
+Offerings you have asked to subscribe to. Tabs filter by **All / Accepted / Rejected / Pending**, each with a count.
+
+| Field | What it shows |
+|---|---|
+| Title and format badge | The offering you subscribed to |
+| Category | Category name and code |
+| Provider | The provider's username and email |
+| Requested | When you sent the request |
+| Status | **Active** (accepted), **Pending** (waiting for the provider) or **Rejected** |
+
+### Browse Catalog
+
+Everything other participants offer. Category tabs (with counts) narrow the list, and the search box matches title, category and provider.
+
+| Field | What it shows |
+|---|---|
+| Title and format badge | The offering, and when it was created |
+| Category | The top-level category |
+| Provider | The provider's email and username |
+| **Subscribe** | Sends the provider a request. The button then shows *Pending*. Your own offerings show *Your offering* instead. |
+
+### My Offerings
+
+Offerings you publish as a provider.
+
+| Field | What it shows |
+|---|---|
+| Title, format badge and short ID | Your offering |
+| Category | Its top-level category |
+| Status | The offering's status as reported by the Data Space (*active* is shown in green) |
+| Created | When you created it, in your local time |
+| **Upload Data** | Adds a file to that offering (see below) |
+
+**New Offering** asks for a title, a business object (grouped by category, loaded from the live catalog) and a format (`json`, `csv` or `xml`).
+
+**Upload Data** asks for a title, an optional description and a file. Drag and drop it or browse for it; files can be up to **50 MB**. You can upload to the same offering as often as you like, and each upload is one data entity.
+
+### Incoming Requests
+
+Requests from other participants to subscribe to your offerings. Tabs filter by **All / Accepted / Rejected / Pending**, each with a count.
+
+| Field | What it shows |
+|---|---|
+| Offering | The offering they want |
+| Category path | Its full category breadcrumb |
+| Requested by | Requester's username and company, and when they asked |
+| **Accept** / **Reject** | Shown for pending requests. Decided requests show an Accepted or Rejected badge instead. |
+
+## How it works
+
+**As a consumer (you want someone else's data)**
+
+1. Open **Browse Catalog** and find an offering.
+2. Click **Subscribe**. The provider sees your request.
+3. When the provider accepts, it moves to **Active** under **My Subscriptions**.
+4. Files the provider has uploaded, now or later, appear under **My Data** for you to download.
+
+**As a provider (you have data to share)**
+
+1. In **My Offerings**, click **New Offering** and pick a category and format. This lists the offering but holds no data yet.
+2. When someone subscribes, their request appears under **Incoming Requests**.
+3. **Accept** or **Reject** it. Only accepted subscribers can receive data.
+4. Click **Upload Data** on the offering whenever you have a file to share.
+
+## Troubleshooting
+
+| What you see | What to do |
+|---|---|
+| "Your session expired - please log in again." | Your Middleware sign-in timed out. Log in again from the prompt. |
+| A download fails with an error | The connector returned an error. Check that your subscription is still accepted, then ask your administrator to look at the connector logs. |
+| An offering you expected is missing | Browse Catalog shows only others' offerings. Yours are under **My Offerings**. |
+
+---
+
+# Developer reference
+
+The rest of this document is for people running or integrating the backend.
+
+## Gateway
 
 A FastAPI gateway over the EnPower / True Connector Data Space APIs. It exposes a
 clean REST interface (with automatic Swagger/OpenAPI docs) for the full **Data
@@ -10,12 +137,12 @@ authenticate once via `POST /auth/login` to obtain an access token from the upst
 Middleware, then pass that same token as `Authorization: Bearer <token>` on every
 other call to this gateway, which forwards it upstream unchanged.
 
-## Requirements
+### Requirements
 
 - Python 3.10+
 - A Middleware account (username/password) on the target Data Space instance
 
-## Setup
+### Setup
 
 ```bash
 python3 -m venv energyguard-dataspace-venv
@@ -43,7 +170,7 @@ the docs) only requires changing these two URLs. See
 Connector stack's own `.env`, and which of *that* stack's variables you must
 customize per deployment vs. which are safe to leave as shared defaults.
 
-## Running
+### Running
 
 ```bash
 uvicorn dataspace_gateway.main:app --reload --port 8000
@@ -54,7 +181,7 @@ uvicorn dataspace_gateway.main:app --reload --port 8000
 - OpenAPI schema: http://localhost:8000/openapi.json
 - Health check: http://localhost:8000/health
 
-## Testing
+### Testing
 
 ```bash
 pip install -r requirements-dev.txt
@@ -77,7 +204,7 @@ server needed) using the credentials in `DATASPACE_TEST_USERNAME` /
 Alternatively, `scripts/smoke_test.sh` does a quicker curl-based version of the
 same read-only checks against an already-running gateway.
 
-## Authentication
+### Authentication
 
 Every endpoint except `/auth/login` requires an `Authorization: Bearer <token>`
 header. Get a token first:
@@ -104,13 +231,13 @@ the page once, paste the token (without the word "Bearer"), and it's applied
 automatically to every endpoint's "Try it out" — no need to paste it again per
 route.
 
-## Endpoint reference
+### Endpoint reference
 
 All endpoints below are on **this gateway** (default `http://localhost:8000`), not
 on the upstream Data Space directly. The gateway forwards each call to the
 corresponding upstream endpoint (shown in parentheses).
 
-### Data Offerings
+#### Data Offerings
 
 | Method | Path | Upstream call | Description |
 |---|---|---|---|
@@ -141,7 +268,7 @@ curl -X POST http://localhost:8000/offerings \
 { "response": "794975e9-7432-4350-b32e-0550019f6e40" }
 ```
 
-### Subscriptions
+#### Subscriptions
 
 | Method | Path | Upstream call | Description |
 |---|---|---|---|
@@ -175,7 +302,7 @@ Middleware requires for the status change to take effect. Don't send the raw req
 without `id` it silently does nothing, and with it the row's `created_on` makes the
 Middleware return a 500.
 
-### Data Provide / Consume
+#### Data Provide / Consume
 
 | Method | Path | Upstream call | Description |
 |---|---|---|---|
@@ -210,9 +337,9 @@ curl "http://localhost:8000/data/consumed/a6a3ca0f-49b6-4d87-a3fc-3c3490b99258?f
   -o downloaded_file.csv
 ```
 
-## End-to-end workflows
+### End-to-end workflows
 
-### Provide data
+#### Provide data
 
 1. `POST /auth/login` — get an access token.
 2. `GET /offerings/catalog` — find the Business Object ID for the service you want to offer.
@@ -221,7 +348,7 @@ curl "http://localhost:8000/data/consumed/a6a3ca0f-49b6-4d87-a3fc-3c3490b99258?f
 5. `POST /subscriptions/requests/{request_id}/respond` — accept (or reject) a request.
 6. `POST /data/provide` — upload the data file against your `data_offering_id`.
 
-### Consume data
+#### Consume data
 
 1. `POST /auth/login` — get an access token.
 2. `GET /offerings/available` — discover Data Offerings from other participants and pick a `cf_id`.
@@ -230,7 +357,7 @@ curl "http://localhost:8000/data/consumed/a6a3ca0f-49b6-4d87-a3fc-3c3490b99258?f
 5. `GET /data/consumed` — list Data Entities available under your accepted subscriptions.
 6. `GET /data/consumed/{entity_id}` — download the file.
 
-## Error handling
+### Error handling
 
 Upstream error responses (status >= 400) are passed through with the same HTTP
 status code, and the response body under `detail` is either the upstream JSON error
@@ -247,20 +374,26 @@ text:
 | `invalid_token` | Upstream itself rejected the token (bad signature, revoked, malformed) - the original upstream error is included under `upstream_detail` |
 | `missing_token` | (download endpoint only) Neither an `Authorization` header nor a `?token=` query parameter was provided |
 
-## Frontend-friendly response shapes
+### Frontend-friendly response shapes
 
 - `GET /offerings/mine`, `GET /offerings/available`, and `GET /subscriptions/requests`
   add `category_path` (a clean `list[str]` breadcrumb) and, where applicable,
   `subscribers` (a clean `list[{status, company, username}]`) alongside the raw
   `category` / `subscriptions` fields upstream returns as HTML strings. Prefer the
   parsed fields; the raw ones are kept only for backwards compatibility.
+- The same list endpoints also add `created_at` (ISO-8601 UTC, parsed from the
+  upstream `created_on`, whose format varies) and, on `/subscriptions/requests`,
+  `requester_company` / `requester_username` (parsed from the HTML
+  `user_requesting` string). Other fields the UI shows (`profile_selector`,
+  `category_code`, `provider_*`, `data_catalog_*`, ...) are passed through as
+  upstream sends them.
 - `GET /data/consumed/{entity_id}` accepts the access token either as the normal
   `Authorization` header or as a `?token=` query parameter - the latter lets a plain
   `<a href="...">` trigger a download directly in a browser without JavaScript
   needing to attach a custom header. This is the only endpoint that accepts a
   query-param token; everywhere else still requires the header.
 
-## Project layout
+### Project layout
 
 ```
 dataspace_gateway/
@@ -276,21 +409,3 @@ dataspace_gateway/
     subscriptions.py   /subscriptions/*
     data.py            /data/*
 ```
-
-## Provider steps
-
-**As a Provider (you have data to share):**
-
-1. **Create Offering** — register that you have something to share (pick a category + business object). This just creates a listing in the catalog, no data yet.
-2. Someone else browses the catalog and hits **Subscribe** on your offering → this creates a pending request that lands in your **Incoming Requests**.
-3. You **Accept** or **Reject** that request. Only once accepted is that person allowed to receive data from this offering.
-4. You **Upload Data** to the offering (can do this any time, repeatedly — each upload is one file/"Data Entity").
-5. Anyone with an accepted subscription to that offering can now see and download the files you uploaded.
-
-**As a Consumer (you want someone else's data):**
-
-1. **Browse Catalog** — see offerings from everyone in the dataspace.
-2. Click **Subscribe** on one you want → sends a request to its owner.
-3. Wait for them to Accept it in their Incoming Requests.
-4. Once accepted, it shows up in **My Subscriptions**, and any files the provider has uploaded (or uploads later) appear for you to download.
-> If a download fails with a `502`, the gateway reached the connector but the connector returned an error; check the connector logs and that your subscription is still accepted.
